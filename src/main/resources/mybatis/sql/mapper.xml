@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="com.hrimDev.mybatis.sql.mapper">
+
+<select id="selectWineQuality" resultType="wineQualityVO">
+        SELECT quality, round(AVG(pH),2) as "pH", round(AVG(fixed_acidity),2) as "fixed_acidity", 
+               round(AVG(volatile_acidity),2) as "volatile_acidity", round(AVG(alcohol),2) as "alcohol"  
+        FROM product_quality
+        GROUP BY quality;
+    </select>
+	
+
+	<select id="selectWineQuality2" resultType="wineQualityVO">
+        SELECT quality , COUNT(*) AS totalCount FROM product_quality 
+          WHERE
+          <![CDATA[
+				alcohol<#{alcohol}        
+          ]]>
+          GROUP BY quality
+    </select>
+    
+    <select id="selectAlcoholPer" resultType="wineAlcoholVO">
+      SELECT
+   		  (CASE
+   		    <![CDATA[
+			  WHEN alcohol>=12 THEN "12도 이상"
+		 	  WHEN alcohol>=11 AND alcohol<12 THEN "11도"
+         	  WHEN alcohol>=10 AND alcohol<11 THEN "10도"
+         	  WHEN alcohol>=9.5 AND alcohol<10 THEN "9.5도"
+         	  WHEN alcohol<9.5 THEN "9.5도 미만"    ]]>
+		  	END) as maximum,
+		  	ROUND((count(product_seq) / ( SELECT count(*) FROM product_quality)) * 100,0) as perCount
+		FROM product_quality
+		GROUP BY (CASE
+		 <![CDATA[
+			  WHEN alcohol>=12 THEN "12도 이상"
+		 	  WHEN alcohol>=11 AND alcohol<12 THEN "11도"
+         	  WHEN alcohol>=10 AND alcohol<11 THEN "10도"
+         	  WHEN alcohol>=9.5 AND alcohol<10 THEN "9.5도"
+         	  WHEN alcohol<9.5 THEN "9.5도 미만"]]>
+		  END
+        )
+        ORDER BY CAST(maximum as INT);
+    
+    </select>
+</mapper>
+<!-- 
+<select id="getList" resultType="wineVO">
+	 <![CDATA[
+		SELECT product_seq, citric_acid, pH, residual_sugar,alcohol,quality
+		FROM product_quality
+		WHERE product_seq<=5
+	 ]]>
+	</select>
+ -->
